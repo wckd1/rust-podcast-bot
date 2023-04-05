@@ -7,6 +7,7 @@ use std::env;
 use dotenv::dotenv;
 
 mod bot;
+mod commands;
 
 #[tokio::main]
 async fn main() {

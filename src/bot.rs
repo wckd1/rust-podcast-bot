@@ -1,12 +1,13 @@
 use teloxide::{prelude::*, utils::command::BotCommands};
+use crate::commands::{Subscription, subscription_parser};
 
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase", description = "These commands are supported:")]
 enum Command {
-    #[command(description = "Add new video/subscription")]
-    Add,
-    #[command(description = "Remove video/subscription")]
-    Remove,
+    #[command(description = "Add new video/subscription", parse_with = subscription_parser)]
+    Add(String, Subscription),
+    #[command(description = "Remove video/subscription", parse_with = subscription_parser)]
+    Remove(String, Subscription),
 }
 
 pub struct BotSerivce {
@@ -28,8 +29,18 @@ impl BotSerivce {
 
 async fn answer(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
     match cmd {
-        Command::Add => bot.send_message(msg.chat.id, "Add").await?,
-        Command::Remove => bot.send_message(msg.chat.id, "Remove").await?,
+        Command::Add(_id, sub) => {
+            bot.send_message(
+                msg.chat.id, 
+                sub.to_string()
+            ).await?
+        },
+        Command::Remove(_id, sub) => {
+            bot.send_message(
+                msg.chat.id, 
+                sub.to_string()
+            ).await?
+        },
     };
 
     Ok(())
