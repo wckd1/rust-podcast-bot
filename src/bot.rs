@@ -41,7 +41,6 @@ impl BotSerivce {
 async fn answer(bot: Bot, msg: Message, cmd: Command, feed_service: FeedService) -> ResponseResult<()> {
     match cmd {
         Command::Add(_id, sub) => {
-            // TODO: a.FeedService.Add(msg.Arguments) instead of Store
             match feed_service.add(sub).await {
                 Ok(_) => bot.send_message(msg.chat.id, "Subscribed").await?,
                 Err(_) => bot.send_message(msg.chat.id, "Failed to add subscription. See logs for more info").await?
