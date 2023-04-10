@@ -48,4 +48,8 @@ impl FeedService {
     pub async fn delete(&self, sub: Subscription)  -> Result<()>{
         self.store.delete_subscription(sub).await
     }
+
+    pub fn check_for_updates(&self) {
+        println!("Not implemented yet");
+    }
 }
