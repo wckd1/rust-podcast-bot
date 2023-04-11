@@ -1,18 +1,18 @@
-mod subscription_parser;
+mod command_parser;
 
 use teloxide::{prelude::*, utils::command::BotCommands};
 use crate::feed_service::FeedService;
 
-use crate::models::subscription::Subscription;
-use self::subscription_parser::subscription_parser;
+use crate::models::youtube_item::YouTubeItem;
+use self::command_parser::parse_youtube_item;
 
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase", description = "These commands are supported:")]
 enum Command {
-    #[command(description = "Add new video/subscription", parse_with = subscription_parser)]
-    Add(String, Subscription),
-    #[command(description = "Remove subscription", parse_with = subscription_parser)]
-    Remove(String, Subscription),
+    #[command(description = "Add new video/subscription", parse_with = parse_youtube_item)]
+    Add(String, YouTubeItem),
+    #[command(description = "Remove subscription", parse_with = parse_youtube_item)]
+    Remove(String, YouTubeItem),
 }
 
 pub struct BotSerivce {
@@ -40,14 +40,17 @@ impl BotSerivce {
 
 async fn answer(bot: Bot, msg: Message, cmd: Command, feed_service: FeedService) -> ResponseResult<()> {
     match cmd {
-        Command::Add(_id, sub) => {
-            match feed_service.add(sub).await {
+        Command::Add(_id, item) => {
+            match feed_service.add(item).await {
                 Ok(_) => bot.send_message(msg.chat.id, "Subscribed").await?,
-                Err(_) => bot.send_message(msg.chat.id, "Failed to add subscription. See logs for more info").await?
+                Err(err) => {
+                    println!("{}", err);
+                    bot.send_message(msg.chat.id, "Failed to add subscription. See logs for more info").await?
+                }
             }
         },
-        Command::Remove(_id, sub) => {
-            match feed_service.delete(sub).await {
+        Command::Remove(_id, item) => {
+            match feed_service.delete(item).await {
                 Ok(_) => bot.send_message(msg.chat.id, "Unsubscribed").await?,
                 Err(_) => bot.send_message(msg.chat.id, "Failed to remove subscription. See logs for more info").await?
             }

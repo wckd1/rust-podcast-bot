@@ -1,4 +1,5 @@
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool, Pool};
+use chrono::{DateTime, Utc};
+use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool, Pool, Row};
 use anyhow::Result;
 
 use crate::models::subscription::Subscription;
@@ -42,18 +43,23 @@ impl Store {
         Ok(Self { db })
     }
 
+    // Subscriptions
     pub async fn create_subscription(&self, sub: Subscription) -> Result<()> {
-        sqlx::query("INSERT INTO subscriptions (id, url) VALUES (?,?)")
+        sqlx::query("INSERT INTO subscriptions (id, url, filter, update_interval, last_updated) VALUES (?,?,?,?,?)")
             .bind(sub.id)
             .bind(sub.url)
+            .bind(sub.filter)
+            .bind(sub.update_interval)
+            .bind(sub.last_updated.to_string())
             .execute(&self.db)
             .await?;
 
         Ok(())
     }
 
-    pub async fn delete_subscription(&self, sub: Subscription) -> Result<()> {
-        sqlx::query("DELETE FROM subscriptions WHERE id = ?")
+    pub async fn update_subscription(&self, sub: Subscription) -> Result<()> {
+        sqlx::query("UPDATE subscriptions SET last_updated = ? WHERE id = ?")
+            .bind(sub.last_updated.to_string())
             .bind(sub.id)
             .execute(&self.db)
             .await?;
@@ -61,6 +67,37 @@ impl Store {
         Ok(())
     }
 
+    pub async fn delete_subscription(&self, id: String) -> Result<()> {
+        sqlx::query("DELETE FROM subscriptions WHERE id = ?")
+            .bind(id)
+            .execute(&self.db)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn get_subscriptions(&self) -> Result<Vec<Subscription>> {
+        let result = sqlx::query("SELECT * FROM subscriptions")
+            .fetch_all(&self.db)
+            .await?
+            .iter()
+            .map(|row| {
+                let upd_string: String = row.get("last_updated");
+                
+                return Subscription {
+                    id: row.get("id"),
+                    url: row.get("url"),
+                    filter: row.get("filter"),
+                    update_interval: row.get("update_interval"),
+                    last_updated: upd_string.parse::<DateTime<Utc>>().unwrap(),
+                }
+            })
+            .collect();
+
+        Ok(result)
+    }
+
+    // Episodes
     pub async fn create_episode(&self, ep: Episode) -> Result<()> {
         sqlx::query("INSERT INTO episodes (uuid, url, length, type, link, image, title, description, author, duration, pub_date) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
             .bind(ep.uuid)

@@ -1,4 +1,5 @@
-use sqlx::Error;
+use anyhow::Result;
+use chrono::{DateTime, Utc};
 
 #[derive(Clone)]
 pub struct FileManager{}
@@ -22,7 +23,13 @@ pub struct FileInfo {
 }
 
 impl FileManager {
-    pub fn get(&self, _url: String) -> Result<Download, Error> {
+    pub fn get(&self, _url: String) -> Result<Download> {
+        println!("Not implemented yet");
         Ok(Download::default())
+    }
+
+    pub async fn check_update(&self, _url: String, _date: DateTime<Utc>, _filter: Option<String>) -> Result<Vec<Download>> {
+        println!("Not implemented yet");
+        Ok(vec![])
     }
 }

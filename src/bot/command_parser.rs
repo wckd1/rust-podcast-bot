@@ -1,7 +1,7 @@
 use url::Url;
 use teloxide::utils::command::ParseError;
 
-use crate::models::subscription::Subscription;
+use crate::models::youtube_item::YouTubeItem;
 
 //
 // Supported links:
@@ -17,8 +17,8 @@ use crate::models::subscription::Subscription;
 // /watch?v={video_id}&list={id}
 // /playlist?list={id}
 //
-pub fn subscription_parser(input: String) -> Result<(String, Subscription), ParseError> { // TODO: Get rid of id
-    let mut sub = Subscription::default();
+pub fn parse_youtube_item(input: String) -> Result<(String, YouTubeItem), ParseError> { // TODO: Get rid of id
+    let mut sub = YouTubeItem::default();
     let input_url: String;
 
     // Check if contains optional filters
@@ -91,7 +91,7 @@ pub fn subscription_parser(input: String) -> Result<(String, Subscription), Pars
 #[test]
 fn test_video_subscription_parse() {
     let url = "https://www.youtube.com/watch?v=video_id".to_string();
-    match subscription_parser(url.clone()) {
+    match parse_youtube_item(url.clone()) {
         Ok(res) => {
             assert_eq!(res.0, "video_id");
             assert_eq!(res.1.id, res.0);
@@ -106,13 +106,13 @@ fn test_video_subscription_parse() {
 #[test]
 fn test_invalid_video_subscription_parse() {
     let url = "https://www.youtube.com/foo?v=video_id".to_string();
-    assert!(subscription_parser(url.clone()).is_err());
+    assert!(parse_youtube_item(url.clone()).is_err());
 }
 
 #[test]
 fn test_playlist_subscription_parse() {
     let playlist_url = "https://www.youtube.com/playlist?list=list_id".to_string();
-    match subscription_parser(playlist_url.clone()) {
+    match parse_youtube_item(playlist_url.clone()) {
         Ok(res) => {
             assert_eq!(res.0, "list_id");
             assert_eq!(res.1.id, res.0);
@@ -124,7 +124,7 @@ fn test_playlist_subscription_parse() {
     }
 
     let watch_url = "https://www.youtube.com/watch?v=video_id&list=list_id".to_string();
-    match subscription_parser(watch_url.clone()) {
+    match parse_youtube_item(watch_url.clone()) {
         Ok(res) => {
             assert_eq!(res.0, "list_id");
             assert_eq!(res.1.id, res.0);
@@ -139,13 +139,13 @@ fn test_playlist_subscription_parse() {
 #[test]
 fn test_invalid_playlist_subscription_parse() {
     let url = "https://www.youtube.com/foo?list=list_id".to_string();
-    assert!(subscription_parser(url.clone()).is_err());
+    assert!(parse_youtube_item(url.clone()).is_err());
 }
 
 #[test]
 fn test_channel_subscription_parse() {
     let short_url = "https://www.youtube.com/c/channel_id".to_string();
-    match subscription_parser(short_url.clone()) {
+    match parse_youtube_item(short_url.clone()) {
         Ok(res) => {
             assert_eq!(res.0, "channel_id");
             assert_eq!(res.1.id, res.0);
@@ -157,7 +157,7 @@ fn test_channel_subscription_parse() {
     }
 
     let full_url = "https://www.youtube.com/channel/channel_id".to_string();
-    match subscription_parser(full_url.clone()) {
+    match parse_youtube_item(full_url.clone()) {
         Ok(res) => {
             assert_eq!(res.0, "channel_id");
             assert_eq!(res.1.id, res.0);
@@ -171,7 +171,7 @@ fn test_channel_subscription_parse() {
     let filter_url = "https://www.youtube.com/channel/channel_id".to_string();
     let filter = "Filter".to_string();
     let built_url = filter_url.clone() + " " + &filter.clone();
-    match subscription_parser(built_url){
+    match parse_youtube_item(built_url){
         Ok(res) => {
             assert_eq!(res.0, "channel_id_Filter");
             assert_eq!(res.1.id, res.0);
@@ -186,11 +186,11 @@ fn test_channel_subscription_parse() {
 #[test]
 fn test_not_url_subscription_parse() {
     let url = "just text".to_string();
-    assert!(subscription_parser(url.clone()).is_err());
+    assert!(parse_youtube_item(url.clone()).is_err());
 }
 
 #[test]
 fn test_not_youtube_subscription_parse() {
     let url = "https://www.google.com".to_string();
-    assert!(subscription_parser(url.clone()).is_err());
+    assert!(parse_youtube_item(url.clone()).is_err());
 }

@@ -15,8 +15,12 @@ impl Updater {
     }
 
     pub async fn start(&self) {
+        println!("Starting updater with {} seconds interval", self.delay);
+
         loop {
-            self.feed_service.check_for_updates();
+            if let Err(err) = self.feed_service.check_for_updates().await {
+                eprintln!("Update failed: {}", err)
+            };
             sleep(Duration::from_secs(self.delay)).await;
         }
     }
