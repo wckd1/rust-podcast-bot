@@ -3,7 +3,7 @@ use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool, Pool, Row};
 use anyhow::Result;
 
 use crate::models::subscription::Subscription;
-use crate::models::episode::Episode;
+use crate::models::episode::{Episode, Enclosure};
 
 const DB_URL: &str = "sqlite://sqlite.db";
 
@@ -13,7 +13,6 @@ pub struct Store {
     db: Pool<Sqlite>
 }
 
-// TODO: Update to use logging
 impl Store {
     pub async fn init() -> Result<Self> {
         // Check if database exist
@@ -115,5 +114,33 @@ impl Store {
             .await?;
 
         Ok(())
+    }
+
+    pub async fn get_episodes(&self, limit: u64) -> Result<Vec<Episode>> {
+        let result = sqlx::query("SELECT * FROM episodes LIMIT ?")
+            .bind(limit.to_string())
+            .fetch_all(&self.db)
+            .await?
+            .iter()
+            .map(|row| {
+                return Episode { 
+                    uuid: row.get("uuid"), 
+                    enclosure: Enclosure { 
+                        url: row.get("url"), 
+                        length: row.get("length"), 
+                        enclosure_type: row.get("type") 
+                    }, 
+                    link: row.get("link"), 
+                    image: row.get("image"), 
+                    title: row.get("title"), 
+                    description: row.get("description"), 
+                    author: row.get("author"), 
+                    duration: row.get("duration"), 
+                    pub_date: row.get("pub_date") 
+                }
+            })
+            .collect();
+
+        Ok(result)
     }
 }

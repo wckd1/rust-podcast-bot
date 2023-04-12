@@ -6,12 +6,12 @@ pub struct Episode {
     pub title: String,
     pub description: String,
     pub author: String,
-    pub duration: i8,
+    pub duration: u8,
     pub pub_date: String
 }
 
 pub struct Enclosure {
     pub url: String,
-    pub length: i8,
+    pub length: u8,
     pub enclosure_type: String,
 }

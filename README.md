@@ -49,3 +49,4 @@ Add .env file following the example of [.env.example](https://github.com/wckd1/r
 
 - `BOT_TOKEN` - token for Telegram bot to communicate with;
 - `UPDATE_INTERVAL` - iterval for feed update in minutes (min 10 mins are recommended);
+- `RSS_KEY` - secret key that will be added to /rss/ endpoint (string)

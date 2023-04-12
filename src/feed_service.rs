@@ -76,6 +76,10 @@ impl FeedService {
         Ok(())
     }
 
+    pub async fn get_episodes(&self, limit: u64) -> Result<Vec<Episode>> {
+        self.store.get_episodes(limit).await
+    }
+
     // Private
     async fn add_episode(&self, download: Download) -> Result<()> {
         let episode = Episode {
@@ -88,7 +92,7 @@ impl FeedService {
             link: download.info.link,
             image: download.info.image_url,
             title: download.info.title,
-            description: "<![CDATA[".to_string() + &download.info.description + "]]>",
+            description: download.info.description,
             author: download.info.author,
             duration: download.info.duration,
             pub_date: download.info.date,

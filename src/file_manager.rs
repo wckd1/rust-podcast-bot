@@ -17,8 +17,8 @@ pub struct FileInfo {
     pub description: String,
     pub image_url: String,
     pub author: String,
-    pub length: i8,
-    pub duration: i8,
+    pub length: u8,
+    pub duration: u8,
     pub date: String,
 }
 
