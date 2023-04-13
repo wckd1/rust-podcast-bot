@@ -21,7 +21,7 @@ pub struct BotSerivce {
 }
 
 impl BotSerivce {
-    pub fn init(token: String, feed_service: FeedService) -> Self {
+    pub fn new(token: String, feed_service: FeedService) -> Self {
         Self { 
             bot: Bot::new(token),
             feed_service,

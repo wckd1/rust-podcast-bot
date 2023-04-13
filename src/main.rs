@@ -28,14 +28,14 @@ async fn main() {
     let rss_key = env::var("RSS_KEY").expect("RSS key not set");
 
     // Services
-    let store = Store::init().await.expect("Database can not be inited");
-    let file_manager = FileManager{};
-    let feed_service = FeedService::init(store, file_manager);
+    let store = Store::new().await.expect("Database can not be inited");
+    let file_manager = FileManager::new();
+    let feed_service = FeedService::new(store, file_manager);
 
     // Handlers
-    let updater = Updater::init(update_interval * 60, feed_service.clone());
-    let bot = BotSerivce::init(token, feed_service.clone());
-    let api_state = APIState::init(rss_key, feed_service);
+    let updater = Updater::new(update_interval * 60, feed_service.clone());
+    let bot = BotSerivce::new(token, feed_service.clone());
+    let api_state = APIState::new(rss_key, feed_service);
 
     // Start handlers
     let updater_task = tokio::spawn(async move {

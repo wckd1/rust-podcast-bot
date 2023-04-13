@@ -14,7 +14,7 @@ pub struct Store {
 }
 
 impl Store {
-    pub async fn init() -> Result<Self> {
+    pub async fn new() -> Result<Self> {
         // Check if database exist
         if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
             println!("Creating database {}", DB_URL);

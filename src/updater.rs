@@ -10,7 +10,7 @@ pub struct Updater {
 }
 
 impl Updater {
-    pub fn init(delay: u64, feed_service: FeedService) -> Self {
+    pub fn new(delay: u64, feed_service: FeedService) -> Self {
         Self { delay, feed_service }
     }
 

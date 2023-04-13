@@ -9,7 +9,7 @@ pub struct APIState {
 }
 
 impl APIState {
-    pub fn init(rss_key: String, feed_service: FeedService) -> Self {
+    pub fn new(rss_key: String, feed_service: FeedService) -> Self {
         Self { rss_key, feed_service }
     }
 }

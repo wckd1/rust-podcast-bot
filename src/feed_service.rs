@@ -17,7 +17,7 @@ pub struct FeedService {
 }
 
 impl FeedService {
-    pub fn init(store: Store, file_manager: FileManager) -> Self {
+    pub fn new(store: Store, file_manager: FileManager) -> Self {
         Self { store, file_manager }
     }
     
