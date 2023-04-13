@@ -12,6 +12,7 @@ pub struct Download {
 
 #[derive(Default)]
 pub struct FileInfo {
+    pub file_type: String, // "audio/mpeg"
     pub link: String,
     pub title: String,
     pub description: String,

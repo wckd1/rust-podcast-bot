@@ -1,6 +1,8 @@
 use anyhow::Result;
 use uuid::Uuid;
-use chrono::Utc;
+use chrono::{Utc, DateTime};
+use tokio::sync::Semaphore;
+use std::sync::Arc;
 
 use crate::file_manager::{FileManager, Download};
 use crate::store::Store;
@@ -45,32 +47,32 @@ impl FeedService {
 
     pub async fn check_for_updates(&self) -> Result<()> {
         let now = Utc::now();
+
+        // Get only subscriptions that required to be updated
         let pending: Vec<Subscription> = self.store.get_subscriptions()
             .await?
             .into_iter()
             .filter(|sub| (sub.last_updated < now) || (sub.last_updated == now))
             .collect();
         
+        // No updates are required
         if pending.len() == 0 {
             println!("No updates are required");
             return Ok(())
         }
 
-        // TODO: Run in parallel 
-        for mut sub in pending {
-            let downloads = self.file_manager.check_update(
-                sub.url.clone(), 
-                sub.last_updated.clone(), 
-                sub.filter.clone()
-            )
-            .await?;
+        // Run update tasks in parallel with limit of 3 at time
+        let sem = Arc::new(Semaphore::new(3));
+        for sub in pending {
+            let permit = Arc::clone(&sem).acquire_owned().await;
+            let fs = Arc::new(self.clone());
 
-            for dl in downloads {
-                self.add_episode(dl).await?
-            }
-            
-            sub.last_updated = now;
-            self.store.update_subscription(sub).await?
+            tokio::spawn(async move {
+                let _permit = permit; // Take permit until task is finished
+                if let Err(err) = fs.update_subscription(now, sub).await {
+                    eprintln!("Can not update subscription: {}", err);
+                }
+            });
         }
 
         Ok(())
@@ -87,7 +89,7 @@ impl FeedService {
             enclosure: Enclosure {
                 url: download.url,
                 length: download.info.length,
-                enclosure_type: "audio/mpeg".to_string(),
+                enclosure_type: download.info.file_type,
             },
             link: download.info.link,
             image: download.info.image_url,
@@ -99,5 +101,23 @@ impl FeedService {
         };
 
         self.store.create_episode(episode).await
+    }
+
+    async fn update_subscription(&self, update_time: DateTime<Utc>, mut sub: Subscription) -> Result<()> {
+        let downloads = self.file_manager.check_update(
+            sub.url.clone(),
+            sub.last_updated.clone(),
+            sub.filter.clone()
+        )
+        .await?;
+
+        for dl in downloads {
+            self.add_episode(dl).await?
+        }
+
+        sub.last_updated = update_time;
+        self.store.update_subscription(sub).await?;
+
+        Ok(())
     }
 }
