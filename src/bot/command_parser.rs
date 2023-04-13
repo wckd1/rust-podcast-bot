@@ -12,6 +12,7 @@ use crate::models::youtube_item::YouTubeItem;
 // Channel:
 // /c/{id}
 // /channel/{id}
+// /@id
 //
 // Playlist:
 // /watch?v={video_id}&list={id}
@@ -71,8 +72,15 @@ pub fn parse_youtube_item(input: String) -> Result<(String, YouTubeItem), ParseE
         }
         
         // Is channel
+        let mut channel_id: Option<String> = None;
+        
         if path == "c" || path == "channel" {
-            let id = path_split.clone().collect::<Vec<&str>>()[1].to_string();
+            channel_id = Some(path_split.clone().collect::<Vec<&str>>()[1].to_string());
+        } else if path.starts_with("@") { // TODO: Add test for this case
+            channel_id = Some(path);
+        }
+
+        if let Some(id) = channel_id {
             if let Some(filter) = &sub.filter {
                 sub.id = format!("{}_{}", id, filter);
             } else {

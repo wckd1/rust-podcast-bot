@@ -61,7 +61,7 @@ impl FeedService {
             return Ok(())
         }
 
-        // Run update tasks in parallel with limit of 3 at time
+        // Run update tasks in parallel with limit of 3 at a time
         let sem = Arc::new(Semaphore::new(3));
         for sub in pending {
             let permit = Arc::clone(&sem).acquire_owned().await;

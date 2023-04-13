@@ -9,8 +9,8 @@ pub struct LocalFile {
 
 impl LocalFile {
     pub fn new(id: String, dir: &PathBuf) -> Result<Self> {
-        let file_path = Path::new(dir).join(format!("{}.mp3", id));
-        let info_path = Path::new(dir).join(format!("{}.info.json", id));
+        let file_path = Path::new(dir).join(Path::new(&id).with_extension("mp3"));
+        let info_path = Path::new(dir).join(Path::new(&id).with_extension("info.json"));
 
         Ok(
             Self { 
