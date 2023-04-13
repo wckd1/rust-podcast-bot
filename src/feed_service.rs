@@ -25,7 +25,7 @@ impl FeedService {
     pub async fn add(&self, item: YouTubeItem) -> Result<()> {
         match item.is_video {
             true => {
-                let download = self.file_manager.get(item.url.clone())?;
+                let download = self.file_manager.get(item.url.clone()).await?;
                 self.add_episode(download).await
             }
             false => {

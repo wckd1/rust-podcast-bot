@@ -3,6 +3,8 @@
 
 .env
 sqlite.db*
+storage/downloads/*
+!storage/downloads/.gitkeep
 
 ### macOS ###
 # General

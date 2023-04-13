@@ -101,14 +101,14 @@ impl Store {
         sqlx::query("INSERT INTO episodes (uuid, url, length, type, link, image, title, description, author, duration, pub_date) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
             .bind(ep.uuid)
             .bind(ep.enclosure.url)
-            .bind(ep.enclosure.length)
+            .bind(ep.enclosure.length.to_string())
             .bind(ep.enclosure.enclosure_type)
             .bind(ep.link)
             .bind(ep.image)
             .bind(ep.title)
             .bind(ep.description)
             .bind(ep.author)
-            .bind(ep.duration)
+            .bind(ep.duration.to_string())
             .bind(ep.pub_date)
             .execute(&self.db)
             .await?;
@@ -123,11 +123,14 @@ impl Store {
             .await?
             .iter()
             .map(|row| {
+                let length: String = row.get("length");
+                let duration: String = row.get("duration");
+
                 return Episode { 
                     uuid: row.get("uuid"), 
                     enclosure: Enclosure { 
                         url: row.get("url"), 
-                        length: row.get("length"), 
+                        length: length.parse::<u64>().unwrap(), 
                         enclosure_type: row.get("type") 
                     }, 
                     link: row.get("link"), 
@@ -135,7 +138,7 @@ impl Store {
                     title: row.get("title"), 
                     description: row.get("description"), 
                     author: row.get("author"), 
-                    duration: row.get("duration"), 
+                    duration: duration.parse::<u64>().unwrap(), 
                     pub_date: row.get("pub_date") 
                 }
             })
