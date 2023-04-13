@@ -11,11 +11,13 @@ use dotenv::dotenv;
 use tokio::signal;
 
 use store::Store;
-use file_manager::FileManager;
+use file_manager::{FileManager, ytdl_loader::YTDLLoader, tg_uploader::TGUploader};
 use feed_service::FeedService;
 use bot::BotSerivce;
 use updater::Updater;
 use api::{APIState, start_api};
+
+// TODO: Update to references instead of clone
 
 #[tokio::main]
 async fn main() {
@@ -25,11 +27,14 @@ async fn main() {
     // Check for required parameters
     let update_interval = env::var("UPDATE_INTERVAL").unwrap().parse::<u64>().expect("Update Interval not set");
     let token = env::var("BOT_TOKEN").expect("Bot token not set");
+    let chat_id = env::var("CHAT_ID").expect("Uploader chat id not set");
     let rss_key = env::var("RSS_KEY").expect("RSS key not set");
 
-    // Services
+    // DB
     let store = Store::new().await.expect("Database can not be inited");
-    let file_manager = FileManager::new();
+    let downloader = YTDLLoader{};
+    let uploader = TGUploader::new(chat_id, token.clone());
+    let file_manager = FileManager::new(downloader, uploader);
     let feed_service = FeedService::new(store, file_manager);
 
     // Handlers

@@ -48,5 +48,6 @@ Servise expose only one endpoint for adding feed to Podcasts app.
 Add .env file following the example of [.env.example](https://github.com/wckd1/rust-podcast-bot/blob/main/.env.example)
 
 - `BOT_TOKEN` - token for Telegram bot to communicate with;
+- `CHAT_ID` - id of chat/group where updates will be posted
 - `UPDATE_INTERVAL` - iterval for feed update in minutes (min 10 mins are recommended);
 - `RSS_KEY` - secret key that will be added to /rss/ endpoint (string)

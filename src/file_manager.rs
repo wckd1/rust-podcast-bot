@@ -1,56 +1,34 @@
-mod ytdl_loader;
+pub mod models;
+pub mod ytdl_loader;
+pub mod tg_uploader;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use serde_derive::{Deserialize};
 
-use ytdl_loader::YTDLLoader;
-
-pub struct Download {
-	pub url: String,
-	pub info: FileInfo,
-}
-
-#[derive(Deserialize)]
-pub struct FileInfo {
-    #[serde(skip)]
-    pub file_type: String,
-    #[serde(rename = "webpage_url")]
-    pub link: String,
-    pub title: String,
-    pub description: String,
-    #[serde(rename = "thumbnail")]
-    pub image_url: String,
-    #[serde(rename = "uploader")]
-    pub author: String,
-    #[serde(rename = "filesize")]
-    pub length: u64,
-    pub duration: u64,
-    #[serde(rename = "upload_date")]
-    pub date: String,
-}
+use self::models::Download;
+use self::ytdl_loader::YTDLLoader;
+use self::tg_uploader::TGUploader;
 
 #[derive(Clone)]
-pub struct FileManager{
-    loader: YTDLLoader
+pub struct FileManager {
+    downloader: YTDLLoader,
+    uploader: TGUploader,
 }
 
 impl FileManager {
-    pub fn new() -> Self {
-        Self { loader: YTDLLoader{} }
+    pub fn new(downloader: YTDLLoader, uploader: TGUploader) -> Self {
+        Self { downloader, uploader }
     }
     
     pub async fn get(&self, url: String) -> Result<Download> {
-        let file = self.loader.download(url).await?;
-        
-        // TODO: Upload file
-        // uploadURL = fm.Uploader.Upload(ctx, file)
-        let upload_url = "".to_string();
+        let file = self.downloader.download(url).await?;
+        let upload_url = self.uploader.upload(&file).await?;
 
         Ok(Download { url: upload_url, info: file.info })
     }
 
     pub async fn check_update(&self, _url: String, _date: DateTime<Utc>, _filter: Option<String>) -> Result<Vec<Download>> {
+        // TODO: Add implementation
         println!("Not implemented yet");
         Ok(vec![])
     }

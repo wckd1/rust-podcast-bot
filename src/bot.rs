@@ -41,11 +41,23 @@ impl BotSerivce {
 async fn answer(bot: Bot, msg: Message, cmd: Command, feed_service: FeedService) -> ResponseResult<()> {
     match cmd {
         Command::Add(_id, item) => {
+            let is_video = item.is_video.clone();
             match feed_service.add(item).await {
-                Ok(_) => bot.send_message(msg.chat.id, "Subscribed").await?,
+                Ok(_) => {
+                    if is_video {
+                        return Ok(())
+                    }
+
+                    bot.send_message(msg.chat.id, "Subscribed").await?
+                }
                 Err(err) => {
-                    println!("{}", err);
-                    bot.send_message(msg.chat.id, "Failed to add subscription. See logs for more info").await?
+                    eprintln!("{}", err);
+                    
+                    if is_video {
+                        bot.send_message(msg.chat.id, "Failed to add episode. See logs for more info").await?
+                    } else {
+                        bot.send_message(msg.chat.id, "Failed to add subscription. See logs for more info").await?
+                    }
                 }
             }
         },

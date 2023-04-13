@@ -4,7 +4,7 @@ use chrono::{Utc, DateTime};
 use tokio::sync::Semaphore;
 use std::sync::Arc;
 
-use crate::file_manager::{FileManager, Download};
+use crate::file_manager::{FileManager, models::Download};
 use crate::store::Store;
 use crate::models::youtube_item::YouTubeItem;
 use crate::models::subscription::Subscription;
