@@ -7,7 +7,6 @@ use crate::models::episode::{Episode, Enclosure};
 
 const DB_URL: &str = "sqlite://sqlite.db";
 
-// TODO: Close with trait
 #[derive(Debug, Clone)]
 pub struct Store {
     db: Pool<Sqlite>

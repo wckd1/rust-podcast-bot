@@ -17,8 +17,6 @@ use bot::BotSerivce;
 use updater::Updater;
 use api::{APIState, start_api};
 
-// TODO: Update to references instead of clone
-
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -32,7 +30,7 @@ async fn main() {
 
     // DB
     let store = Store::new().await.expect("Database can not be inited");
-    let downloader = YTDLLoader{};
+    let downloader = YTDLLoader::new();
     let uploader = TGUploader::new(chat_id, token.clone());
     let file_manager = FileManager::new(downloader, uploader);
     let feed_service = FeedService::new(store, file_manager);

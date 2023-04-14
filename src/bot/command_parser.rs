@@ -18,7 +18,7 @@ use crate::models::youtube_item::YouTubeItem;
 // /watch?v={video_id}&list={id}
 // /playlist?list={id}
 //
-pub fn parse_youtube_item(input: String) -> Result<(String, YouTubeItem), ParseError> { // TODO: Get rid of id
+pub fn parse_youtube_item(input: String) -> Result<(String, YouTubeItem), ParseError> {
     let mut sub = YouTubeItem::default();
     let input_url: String;
 
@@ -76,7 +76,7 @@ pub fn parse_youtube_item(input: String) -> Result<(String, YouTubeItem), ParseE
         
         if path == "c" || path == "channel" {
             channel_id = Some(path_split.clone().collect::<Vec<&str>>()[1].to_string());
-        } else if path.starts_with("@") { // TODO: Add test for this case
+        } else if path.starts_with("@") {
             channel_id = Some(path);
         }
 
@@ -128,7 +128,7 @@ fn test_playlist_subscription_parse() {
             assert_eq!(res.1.is_video, false);
             assert_eq!(res.1.filter, None);
         },
-        Err(e) => panic!("Playlist url parse failed: {}", e),
+        Err(e) => panic!("Playlist path url parse failed: {}", e),
     }
 
     let watch_url = "https://www.youtube.com/watch?v=video_id&list=list_id".to_string();
@@ -140,7 +140,7 @@ fn test_playlist_subscription_parse() {
             assert_eq!(res.1.is_video, false);
             assert_eq!(res.1.filter, None);
         },
-        Err(e) => panic!("Watch url parse failed: {}", e),
+        Err(e) => panic!("Playlist param url parse failed: {}", e),
     }
 }
 
@@ -161,7 +161,7 @@ fn test_channel_subscription_parse() {
             assert_eq!(res.1.is_video, false);
             assert_eq!(res.1.filter, None);
         },
-        Err(e) => panic!("Short url parse failed: {}", e),
+        Err(e) => panic!("Short channel url parse failed: {}", e),
     }
 
     let full_url = "https://www.youtube.com/channel/channel_id".to_string();
@@ -173,21 +173,39 @@ fn test_channel_subscription_parse() {
             assert_eq!(res.1.is_video, false);
             assert_eq!(res.1.filter, None);
         },
-        Err(e) => panic!("Full url parse failed: {}", e),
+        Err(e) => panic!("Full channel url parse failed: {}", e),
     }
+}
 
-    let filter_url = "https://www.youtube.com/channel/channel_id".to_string();
+#[test]
+fn test_channel_username_subscription_parse() {
+    let short_url = "https://www.youtube.com/@channel_id".to_string();
+    match parse_youtube_item(short_url.clone()) {
+        Ok(res) => {
+            assert_eq!(res.0, "@channel_id");
+            assert_eq!(res.1.id, res.0);
+            assert_eq!(res.1.url, short_url);
+            assert_eq!(res.1.is_video, false);
+            assert_eq!(res.1.filter, None);
+        },
+        Err(e) => panic!("Username channel parse failed: {}", e),
+    }
+}
+
+#[test]
+fn test_channel_filtered_subscription_parse() {
+    let url = "https://www.youtube.com/channel/channel_id".to_string();
     let filter = "Filter".to_string();
-    let built_url = filter_url.clone() + " " + &filter.clone();
+    let built_url = url.clone() + " " + &filter.clone();
     match parse_youtube_item(built_url){
         Ok(res) => {
             assert_eq!(res.0, "channel_id_Filter");
             assert_eq!(res.1.id, res.0);
-            assert_eq!(res.1.url, filter_url);
+            assert_eq!(res.1.url, url);
             assert_eq!(res.1.is_video, false);
             assert_eq!(res.1.filter, Some("Filter".to_string()));
         },
-        Err(e) => panic!("Full url parse failed: {}", e),
+        Err(e) => panic!("Filtered channel parse failed: {}", e),
     }
 }
 

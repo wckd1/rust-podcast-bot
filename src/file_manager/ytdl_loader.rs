@@ -12,6 +12,10 @@ const BASE_CMD: &str = "yt-dlp -x --audio-format=mp3 --audio-quality=0 -f m4a/be
 pub struct YTDLLoader {}
 
 impl YTDLLoader {
+    pub fn new() -> Self {
+        Self {}
+    }
+
     pub async fn download(&self, url: String) -> Result<LocalFile> {
         let uuid = Uuid::new_v4().to_string();
         let cmd = format!("{} {} -o {}", BASE_CMD, url, uuid);
